@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+. "${SCRIPT_PATH}"/config-read.shlib; # load the config library functions
 
-ROOT=private-testnet
+ROOT="$(config_get ROOT)";
 
 export PGPASSFILE=postgres-conn/pgpass-privatenet
 
@@ -15,5 +16,5 @@ cp "${SCRIPT_PATH}"/../templates/db-sync-config-template.yaml ${ROOT}/db-sync-co
 cardano-db-sync \
     --config ${ROOT}/db-sync-config.yaml \
     --socket-path ${CARDANO_NODE_SOCKET_PATH} \
-    --state-dir ${ROOT}/ledger-state/privatenet \
+    --state-dir ${ROOT}/ledger-state/ \
     --schema-dir ${SCHEMA_DIR}

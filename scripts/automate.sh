@@ -3,27 +3,22 @@
 set -e
 
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+. "${SCRIPT_PATH}"/config-read.shlib; # load the config library functions
 
-ROOT=private-testnet
+ROOT="$(config_get ROOT)";
+
 export CARDANO_NODE_SOCKET_PATH=$ROOT/node-spo1/node.sock
-echo "path: $CARDANO_NODE_SOCKET_PATH"
+echo "CARDANO_NODE_SOCKET_PATH: $CARDANO_NODE_SOCKET_PATH"
+echo "ROOT: $ROOT"
 
 wait_until_socket_detected()
 {
+  echo "Sleep 5 secs"; sleep 5
   echo "wait until socket is detected, socket: $CARDANO_NODE_SOCKET_PATH"
   while [ ! -S "$CARDANO_NODE_SOCKET_PATH" ]; do
     echo "Sleep 5 secs"; sleep 5
   done
   echo "socket is detected"
-}
-
-start_all_nodes() {
-  echo "start all the nodes in bg"
-  $ROOT/run/all.sh > /dev/null 2>&1 &
-  wait_until_count_of_running_nodes 3
-  echo
-  echo "PIDs of started nodes:"
-  for PID in `ps -ef | grep 'cardano-node' | grep -v grep |  awk '{print $2}'`;do echo "PID: $PID"; done
 }
 
 wait_until_count_of_running_nodes() {
@@ -40,6 +35,15 @@ kill_running_nodes() {
   echo "send kill signal for each running node PID"
   for PID in `ps -ef | grep 'cardano-node' | grep -v grep |  awk '{print $2}'`;do kill -TERM $PID 2> /dev/null; done
   wait_until_count_of_running_nodes 0
+}
+
+start_all_nodes() {
+  echo "start all the nodes in bg"
+  $ROOT/run/all.sh > /dev/null 2>&1 &
+  wait_until_count_of_running_nodes 3
+  echo
+  echo "PIDs of started nodes:"
+  for PID in `ps -ef | grep 'cardano-node' | grep -v grep |  awk '{print $2}'`;do echo "PID: $PID"; done
 }
 
 restart_nodes_in_bg()
@@ -63,14 +67,39 @@ run_update_script()
   echo "update-$1 script completed"
 }
 
+wait_for_epoch_to_advance()
+{
+  target_epoch_no=$(expr $epoch_no + $1)
+  echo "Waiting until epoch $target_epoch_no"
+  while [ $epoch_no -lt $target_epoch_no ]; do
+    echo "Sleep 30 secs"; sleep 30
+    epoch_no=$(cardano-cli query tip --testnet-magic 42 | jq '.epoch')
+  done
+  echo "reached epoch: $epoch_no"
+}
+
 query_tip()
 {
   cardano-cli query tip --testnet-magic 42
 }
 
+running_nodes_cnt=$( ps -ef | grep 'cardano-node' | grep -v grep | wc -l )
+if [ $running_nodes_cnt -gt 0 ]; then
+  echo "Script aborted, since running cardano nodes have been found."
+  exit
+fi
+
 # rerunning the script should always result in restarting nodes
 # this way we can at least control this a bit more, compared to if users where to do it manually
-"${SCRIPT_PATH}"/kill-processes-and-remove-private-testnet.sh
+kill_running_nodes
+
+# delete root folder to get clean slate only if we didn't ask it not to do that
+# invoke as `./automate 1` to effectively stop flushing the underlying private blockchain
+if [ "$1" = "1" ]; then
+  echo "We opted to not remove the existing state of the blockchain, skipping the removal"
+else
+  rm -rf $ROOT
+fi
 
 # run script to create config
 "${SCRIPT_PATH}"/mkfiles.sh
@@ -79,12 +108,14 @@ restart_nodes_in_bg
 echo
 wait_until_socket_detected
 
-#run_update_script "1"
+if [ -f $ROOT/ready.flag ]; then
+  echo "ready.flag already set, no need to consume the genesis utxo"
+else
+  echo "we're booting from a pristine state; consuming the genesis utxo"
+  run_update_script "1"
+fi
 
-#query_tip
-cli_version=$(cardano-cli version)
-echo "CLI Version = $cli_version"
-
+query_tip
 echo
 current_era=$( cardano-cli query tip --testnet-magic 42 | jq '.era' )
 protocol_version=$( cardano-cli query protocol-parameters --testnet-magic 42 | jq '.protocolVersion.major' )
@@ -92,4 +123,7 @@ echo "Nodes are running in era: $current_era, major protocol version: $protocol_
 echo
 echo "Congrats! Your network is ready for use!"
 
+# the simplest possible state-keeping registry. An alternative would be sqlite, but even that is probably an overkill
+touch $ROOT/ready.flag
 wait
+
