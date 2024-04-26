@@ -32,7 +32,7 @@ cardano-cli transaction build-raw \
             --fee ${FEE} \
             --tx-in ${TXID0}\
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2)) \
-            --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2 - ${FEE})) \
+            --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2 - ${FEE} - 2000000)) \
             --certificate-file addresses/user1-stake.reg.cert \
             --out-file tx2.txbody
 
