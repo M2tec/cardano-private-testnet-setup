@@ -688,3 +688,6 @@ elif [ "$1" = "shelley" ]; then
 else
   echo "Default yaml configuration applied."
 fi
+
+# Copy db-sync config
+cp "${SCRIPT_PATH}"/../templates/db-sync-config-template.yaml ${ROOT}/db-sync-config.yaml
