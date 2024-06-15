@@ -347,3 +347,6 @@ echo
 echo "Alternatively, you can run all the nodes in one go:"
 echo
 echo "$ROOT/run/all.sh"
+
+# Copy db-sync config
+cp "${SCRIPT_PATH}"/../templates/db-sync-config-template.yaml ${ROOT}/db-sync-config.yaml
