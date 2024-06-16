@@ -2,6 +2,8 @@
 
 set -e
 
+NETWORK_MAGIC=${NETWORK_MAGIC:-42}
+
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . "${SCRIPT_PATH}"/config-read.shlib; # load the config library functions
 
@@ -73,14 +75,14 @@ wait_for_epoch_to_advance()
   echo "Waiting until epoch $target_epoch_no"
   while [ $epoch_no -lt $target_epoch_no ]; do
     echo "Sleep 30 secs"; sleep 30
-    epoch_no=$(cardano-cli query tip --testnet-magic 42 | jq '.epoch')
+    epoch_no=$(cardano-cli query tip --testnet-magic ${NETWORK_MAGIC} | jq '.epoch')
   done
   echo "reached epoch: $epoch_no"
 }
 
 query_tip()
 {
-  cardano-cli query tip --testnet-magic 42
+  cardano-cli query tip --testnet-magic ${NETWORK_MAGIC}
 }
 
 running_nodes_cnt=$( ps -ef | grep 'cardano-node' | grep -v grep | wc -l )
@@ -117,8 +119,8 @@ fi
 
 query_tip
 echo
-current_era=$( cardano-cli query tip --testnet-magic 42 | jq '.era' )
-protocol_version=$( cardano-cli query protocol-parameters --testnet-magic 42 | jq '.protocolVersion.major' )
+current_era=$( cardano-cli query tip --testnet-magic ${NETWORK_MAGIC} | jq '.era' )
+protocol_version=$( cardano-cli query protocol-parameters --testnet-magic ${NETWORK_MAGIC} | jq '.protocolVersion.major' )
 echo "Nodes are running in era: $current_era, major protocol version: $protocol_version"
 echo
 echo "Congrats! Your network is ready for use!"

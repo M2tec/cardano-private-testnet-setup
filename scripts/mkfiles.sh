@@ -34,7 +34,7 @@ esac
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . "${SCRIPT_PATH}"/config-read.shlib; # load the config library functions
 
-NETWORK_MAGIC=42
+NETWORK_MAGIC=${NETWORK_MAGIC}
 SECURITY_PARAM=10
 NUM_SPO_NODES=3
 INIT_SUPPLY=$(config_get INIT_SUPPLY);
@@ -146,7 +146,7 @@ mv "${ROOT}/genesis.alonzo.json" "${ROOT}/genesis/shelley/genesis.alonzo.json"
 mv "${ROOT}/genesis.conway.json" "${ROOT}/genesis/shelley/genesis.conway.json"
 mv "${ROOT}/genesis.json" "${ROOT}/genesis/shelley/genesis.json"
 
-jq --raw-output '.protocolConsts.protocolMagic = 42' "${ROOT}/genesis/byron/genesis-wrong.json" > "${ROOT}/genesis/byron/genesis.json"
+jq --raw-output ".protocolConsts.protocolMagic = ${NETWORK_MAGIC}" "${ROOT}/genesis/byron/genesis-wrong.json" > "${ROOT}/genesis/byron/genesis.json"
 
 rm "${ROOT}/genesis/byron/genesis-wrong.json"
 

@@ -19,8 +19,8 @@ pushd ${ROOT}
 export CARDANO_NODE_SOCKET_PATH=node-spo1/node.sock
 
 # Use the UTXO at given utxo's address.
-UTXO_ADDR=$(cardano-cli address build --testnet-magic 42 --payment-verification-key-file "$UTXO_VKEY")
-CHOSEN_UTXO=$(cardano-cli query utxo --address "$UTXO_ADDR" --testnet-magic 42 | tail -1 | awk '{printf "%s#%s %s \n", $1 , $2, $3}')
+UTXO_ADDR=$(cardano-cli address build --testnet-magic ${NETWORK_MAGIC} --payment-verification-key-file "$UTXO_VKEY")
+CHOSEN_UTXO=$(cardano-cli query utxo --address "$UTXO_ADDR" --testnet-magic ${NETWORK_MAGIC} | tail -1 | awk '{printf "%s#%s %s \n", $1 , $2, $3}')
 
 TXID0=$(echo ${CHOSEN_UTXO} | awk '{print $1}')
 COINS_IN_INPUT=$(echo ${CHOSEN_UTXO} | awk '{print $2}')
@@ -39,10 +39,10 @@ cardano-cli transaction build-raw \
 cardano-cli transaction sign \
             --signing-key-file addresses/user1-stake.skey \
             --signing-key-file "$UTXO_SKEY" \
-            --testnet-magic 42 \
+            --testnet-magic ${NETWORK_MAGIC} \
             --tx-body-file  tx2.txbody \
             --out-file      tx2.tx
 
-cardano-cli transaction submit --tx-file tx2.tx --testnet-magic 42
+cardano-cli transaction submit --tx-file tx2.tx --testnet-magic ${NETWORK_MAGIC}
 
 popd

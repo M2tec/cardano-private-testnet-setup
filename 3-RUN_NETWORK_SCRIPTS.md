@@ -57,11 +57,11 @@ has some `UTxOs` to use for doing transactions.
   ROOT=private-testnet
   export CARDANO_NODE_SOCKET_PATH=$ROOT/node-spo1/node.sock
 
-  cardano-cli query tip --testnet-magic 42 | jq '.era'
+  cardano-cli query tip --testnet-magic ${NETWORK_MAGIC} | jq '.era'
   #output
   "Babbage"
 
-  cardano-cli query utxo --address $(cat private-testnet/addresses/user1.addr) --testnet-magic 42
+  cardano-cli query utxo --address $(cat private-testnet/addresses/user1.addr) --testnet-magic ${NETWORK_MAGIC}
   #output
                             TxHash                                 TxIx        Amount
   --------------------------------------------------------------------------------------
