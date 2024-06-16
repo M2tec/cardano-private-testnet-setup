@@ -9,6 +9,8 @@ SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 ROOT="$(config_get ROOT)";
 
+echo "NETWORK: ${NETWORK}"
+echo "NETWORK_MAGIC: ${NETWORK_MAGIC}"
 export CARDANO_NODE_SOCKET_PATH=$ROOT/node-spo1/node.sock
 echo "CARDANO_NODE_SOCKET_PATH: $CARDANO_NODE_SOCKET_PATH"
 echo "ROOT: $ROOT"
