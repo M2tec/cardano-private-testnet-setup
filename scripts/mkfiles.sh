@@ -34,7 +34,7 @@ esac
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . "${SCRIPT_PATH}"/config-read.shlib; # load the config library functions
 
-NETWORK_MAGIC=${NETWORK_MAGIC}
+NETWORK_MAGIC=${NETWORK_MAGIC:-42}
 SECURITY_PARAM=10
 NUM_SPO_NODES=3
 INIT_SUPPLY=$(config_get INIT_SUPPLY);
